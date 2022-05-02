@@ -1,0 +1,151 @@
+import { path } from '@stencil/core/compiler';
+import { mockConfig, mockStencilSystem, mockBuildCtx, mockCompilerCtx, mockModule } from '@stencil/core/testing';
+import type * as d from '../../../declarations';
+import {
+  addCustomElementInputs,
+  generateEntryPoint,
+  getBundleOptions,
+  outputCustomElements,
+} from '../dist-custom-elements';
+import * as outputCustomElementsMod from '../dist-custom-elements';
+import { OutputTargetDistCustomElements } from '../../../declarations';
+import { stubComponentCompilerMeta } from '../../types/tests/ComponentCompilerMeta.stub';
+import { STENCIL_APP_GLOBALS_ID, STENCIL_INTERNAL_CLIENT_ID, USER_INDEX_ENTRY_ID } from '../../bundle/entry-alias-ids';
+
+const setup = () => {
+  const sys = mockStencilSystem();
+  const config: d.Config = mockConfig(sys);
+  const compilerCtx = mockCompilerCtx(config);
+  const buildCtx = mockBuildCtx(config, compilerCtx);
+  const root = config.rootDir;
+  config.configPath = '/testing-path';
+  config.srcDir = '/src';
+  config.buildAppCore = true;
+  config.rootDir = path.join(root, 'User', 'testing', '/');
+  config.namespace = 'TestApp';
+  config.buildEs5 = true;
+  config.globalScript = path.join(root, 'User', 'testing', 'src', 'global.ts');
+  config.outputTargets = [{ type: 'dist-custom-elements' }];
+
+  const bundleCustomElementsSpy = jest.spyOn(outputCustomElementsMod, 'bundleCustomElements');
+
+  compilerCtx.moduleMap.set('test', mockModule());
+
+  return { config, compilerCtx, buildCtx, bundleCustomElementsSpy };
+};
+
+describe('Custom Elements output target', () => {
+  it('should return early if config.buildDist is false', async () => {
+    const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+    config.buildDist = false;
+    const retVal = await outputCustomElements(config, compilerCtx, buildCtx);
+    expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
+  });
+
+  it.each([[[]], [[{ type: 'dist' }]], [[{ type: 'dist' }, { type: 'dist-custom-elements-bundle' }]]])(
+    'should return early if no appropriate output target (%j)',
+    async (outputTargets) => {
+      const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+      config.outputTargets = outputTargets as d.OutputTarget[];
+      const retVal = await outputCustomElements(config, compilerCtx, buildCtx);
+      expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
+    }
+  );
+
+  xit('should exit without error', async () => {
+    const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+    buildCtx.components = [stubComponentCompilerMeta()];
+    const retVal = await outputCustomElements(config, compilerCtx, buildCtx);
+  });
+
+  describe('generateEntryPoint', () => {
+    it.each([true, false])('should include globalScripts if the right option is set', (includeGlobalScripts) => {
+      const entryPoint = generateEntryPoint({
+        type: 'dist-custom-elements',
+        includeGlobalScripts,
+      });
+      const globalScriptsBoilerplate = `import { globalScripts } from '${STENCIL_APP_GLOBALS_ID}';\nglobalScripts();`;
+      if (includeGlobalScripts) {
+        expect(entryPoint.includes(globalScriptsBoilerplate)).toBeTruthy();
+      } else {
+        expect(entryPoint.includes(globalScriptsBoilerplate)).not.toBeTruthy();
+      }
+    });
+  });
+
+  describe('getBundleOptions', () => {
+    it('should set basic properties on BundleOptions', () => {
+      const { config, buildCtx, compilerCtx } = setup();
+      const options = getBundleOptions(config, buildCtx, compilerCtx, { type: 'dist-custom-elements' });
+      expect(options.id).toBe('customElements');
+      expect(options.platform).toBe('client');
+      expect(options.inlineWorkers).toBeTruthy();
+      expect(options.inputs).toEqual({
+        index: '\0core',
+      });
+      expect(options.loader).toEqual({
+        '\0core': generateEntryPoint({ type: 'dist-custom-elements' }),
+      });
+      expect(options.preserveEntrySignatures).toEqual('allow-extension');
+    });
+
+    it.each([true, false, undefined])('should set externalRuntime correctly when %p', (externalRuntime) => {
+      const { config, buildCtx, compilerCtx } = setup();
+      const options = getBundleOptions(config, buildCtx, compilerCtx, {
+        type: 'dist-custom-elements',
+        externalRuntime,
+      });
+      if (externalRuntime) {
+        expect(options.externalRuntime).toBeTruthy();
+      } else {
+        expect(options.externalRuntime).toBeFalsy();
+      }
+    });
+
+    it.each([true, false])('should pass through inlineDynamicImports=%p', (inlineDynamicImports) => {
+      const { config, buildCtx, compilerCtx } = setup();
+      const options = getBundleOptions(config, buildCtx, compilerCtx, {
+        type: 'dist-custom-elements',
+        inlineDynamicImports,
+      });
+
+      if (inlineDynamicImports) {
+        expect(options.inlineDynamicImports).toBeTruthy();
+      } else {
+        expect(options.inlineDynamicImports).toBeFalsy();
+      }
+    });
+  });
+
+  describe('addCustomElementInputs', () => {
+    it('should add imports to index.js for all included components', () => {
+      const componentOne = stubComponentCompilerMeta();
+      const componentTwo = stubComponentCompilerMeta({
+        componentClassName: 'MyBestComponent',
+        tagName: 'my-best-component',
+      });
+      const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+      buildCtx.components = [componentOne, componentTwo];
+
+      const bundleOptions = getBundleOptions(
+        config,
+        buildCtx,
+        compilerCtx,
+        config.outputTargets[0] as OutputTargetDistCustomElements
+      );
+      addCustomElementInputs(buildCtx, bundleOptions);
+      expect(bundleOptions.loader['\0core']).toEqual(
+        `export { setAssetPath, setPlatformOptions } from '${STENCIL_INTERNAL_CLIENT_ID}';
+export * from '${USER_INDEX_ENTRY_ID}';
+import { globalScripts } from '${STENCIL_APP_GLOBALS_ID}';
+globalScripts();
+import { StubCmp as $CmpStubCmp, defineCustomElement as cmpDefCustomEleStubCmp } from '\0StubCmp';
+export const StubCmp = $CmpStubCmp;
+export const defineCustomElementStubCmp = cmpDefCustomEleStubCmp;
+import { MyBestComponent as $CmpMyBestComponent, defineCustomElement as cmpDefCustomEleMyBestComponent } from '\0MyBestComponent';
+export const MyBestComponent = $CmpMyBestComponent;
+export const defineCustomElementMyBestComponent = cmpDefCustomEleMyBestComponent;`
+      );
+    });
+  });
+});

@@ -10,6 +10,7 @@ module.exports = {
     '@stencil/core/mock-doc': '<rootDir>/mock-doc/index.cjs',
     '@stencil/core/testing': '<rootDir>/testing/index.js',
     '@utils': '<rootDir>/src/utils',
+    '@compiler-deps': '<rootDir>/src/compiler/sys/modules/compiler-deps.ts'
   },
   coverageDirectory: './coverage/',
   coverageReporters: ['json', 'lcov', 'text', 'clover'],

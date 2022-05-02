@@ -23,9 +23,9 @@ export function shuffleArray(array: any[]) {
   return array;
 }
 
-export function expectFiles(fs: d.InMemoryFileSystem, filePaths: string[]) {
+export function expectFiles(sys: d.CompilerSystem, filePaths: string[]) {
   filePaths.forEach((filePath) => {
-    fs.sys.statSync(filePath);
+    sys.statSync(filePath);
   });
 }
 
