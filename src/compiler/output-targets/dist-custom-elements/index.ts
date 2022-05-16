@@ -41,7 +41,7 @@ export const outputCustomElements = async (
     return;
   }
 
-  const outputTargets = config.outputTargets.filter(isOutputTargetDistCustomElements);
+  const outputTargets = (config.outputTargets ?? []).filter(isOutputTargetDistCustomElements);
   if (outputTargets.length === 0) {
     return;
   }
@@ -135,19 +135,19 @@ export const bundleCustomElements = async (
           buildCtx.diagnostics.push(...optimizeResults.diagnostics);
           if (!hasError(optimizeResults.diagnostics) && typeof optimizeResults.output === 'string') {
             code = optimizeResults.output;
-            sourceMap = optimizeResults.sourceMap;
           }
-          if (sourceMap) {
+          if (optimizeResults.sourceMap) {
+            sourceMap = optimizeResults.sourceMap;
             code = code + getSourceMappingUrlForEndOfFile(bundle.fileName);
             await compilerCtx.fs.writeFile(
-              join(outputTarget.dir, bundle.fileName + '.map'),
+              join(outputTarget.dir!, bundle.fileName + '.map'),
               JSON.stringify(sourceMap),
               {
                 outputTargetType: outputTarget.type,
               }
             );
           }
-          await compilerCtx.fs.writeFile(join(outputTarget.dir, bundle.fileName), code, {
+          await compilerCtx.fs.writeFile(join(outputTarget.dir!, bundle.fileName), code, {
             outputTargetType: outputTarget.type,
           });
         }
@@ -196,10 +196,10 @@ export const addCustomElementInputs = (buildCtx: d.BuildCtx, bundleOpts: BundleO
     }
 
     bundleOpts.inputs[cmp.tagName] = coreKey;
-    bundleOpts.loader[coreKey] = exp.join('\n');
+    bundleOpts.loader![coreKey] = exp.join('\n');
   });
 
-  bundleOpts.loader['\0core'] += indexImports.join('\n');
+  bundleOpts.loader!['\0core'] += indexImports.join('\n');
 };
 
 /**

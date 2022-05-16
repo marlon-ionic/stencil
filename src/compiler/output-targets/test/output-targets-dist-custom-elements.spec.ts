@@ -38,7 +38,7 @@ describe('Custom Elements output target', () => {
   it('should return early if config.buildDist is false', async () => {
     const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
     config.buildDist = false;
-    const retVal = await outputCustomElements(config, compilerCtx, buildCtx);
+    await outputCustomElements(config, compilerCtx, buildCtx);
     expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
   });
 
@@ -47,7 +47,7 @@ describe('Custom Elements output target', () => {
     async (outputTargets) => {
       const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
       config.outputTargets = outputTargets as d.OutputTarget[];
-      const retVal = await outputCustomElements(config, compilerCtx, buildCtx);
+      await outputCustomElements(config, compilerCtx, buildCtx);
       expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
     }
   );
@@ -118,7 +118,7 @@ describe('Custom Elements output target', () => {
         componentClassName: 'MyBestComponent',
         tagName: 'my-best-component',
       });
-      const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+      const { config, compilerCtx, buildCtx, } = setup();
       buildCtx.components = [componentOne, componentTwo];
 
       const bundleOptions = getBundleOptions(
@@ -144,7 +144,7 @@ export { MyBestComponent, defineCustomElement as defineCustomElementMyBestCompon
         tagName: 'component-with-jsx',
       });
 
-      const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+      const { config, compilerCtx, buildCtx, } = setup();
       buildCtx.components = [component];
 
       const bundleOptions = getBundleOptions(
