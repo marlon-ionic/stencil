@@ -147,5 +147,30 @@ export const MyBestComponent = $CmpMyBestComponent;
 export const defineCustomElementMyBestComponent = cmpDefCustomEleMyBestComponent;`
       );
     });
+
+    it('should correctly handle capitalization edge-cases', () => {
+      const component = stubComponentCompilerMeta({
+        componentClassName: 'ComponentWithJSX',
+        tagName: 'component-with-jsx',
+      });
+
+      const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+      buildCtx.components = [component];
+
+      const bundleOptions = getBundleOptions(
+        config,
+        buildCtx,
+        compilerCtx,
+        config.outputTargets[0] as OutputTargetDistCustomElements
+      );
+      addCustomElementInputs(buildCtx, bundleOptions);
+      expect(bundleOptions.loader['\0core']).toEqual(
+        `export { setAssetPath, setPlatformOptions } from '${STENCIL_INTERNAL_CLIENT_ID}';
+export * from '${USER_INDEX_ENTRY_ID}';
+import { globalScripts } from '${STENCIL_APP_GLOBALS_ID}';
+globalScripts();
+export { ComponentWithJsx, defineCustomElement as defineCustomElementComponentWithJsx } from '\0ComponentWithJsx';`
+      );
+    });
   });
 });

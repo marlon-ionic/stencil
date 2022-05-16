@@ -167,7 +167,7 @@ export const bundleCustomElements = async (
 export const addCustomElementInputs = (buildCtx: d.BuildCtx, bundleOpts: BundleOptions): void => {
   const components = buildCtx.components;
   // an array to store the imports of these modules that we're going to add to our entry chunk
-  const indexImps: string[] = [];
+  const indexImports: string[] = [];
 
   components.forEach((cmp) => {
     const exp: string[] = [];
@@ -178,7 +178,7 @@ export const addCustomElementInputs = (buildCtx: d.BuildCtx, bundleOpts: BundleO
 
     if (cmp.isPlain) {
       exp.push(`export { ${importName} as ${exportName} } from '${cmp.sourceFilePath}';`);
-      indexImps.push(`export { ${importName} as ${exportName} } from '${coreKey}';`);
+      indexImports.push(`export { {${exportName} } from '${coreKey}';`);
     } else {
       // the `importName` may collide with the `exportName`, alias it just in case it does with `importAs`
       exp.push(
@@ -190,11 +190,9 @@ export const addCustomElementInputs = (buildCtx: d.BuildCtx, bundleOpts: BundleO
       // Here we push an import for this component onto our array which references the `coreKey` (prefixed with `\0`).
       // We have to do this so that our import is referencing the correct virtual module, if we instead referenced, for
       // instance, `cmp.sourceFilePath`, we would end up with duplicated modules in our output.
-      indexImps.push(
-        `import { ${importName} as ${importAs}, defineCustomElement as cmpDefCustomEle${exportName} } from '${coreKey}';`
-      );
-      indexImps.push(`export const ${exportName} = ${importAs};`);
-      indexImps.push(`export const defineCustomElement${exportName} = cmpDefCustomEle${exportName};`);
+      indexImports.push(
+        `export { ${exportName}, defineCustomElement as defineCustomElement${exportName} } from '${coreKey}';`
+      )
     }
 
     bundleOpts.inputs[cmp.tagName] = coreKey;
