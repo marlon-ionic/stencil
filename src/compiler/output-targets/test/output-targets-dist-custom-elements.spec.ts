@@ -118,7 +118,7 @@ describe('Custom Elements output target', () => {
         componentClassName: 'MyBestComponent',
         tagName: 'my-best-component',
       });
-      const { config, compilerCtx, buildCtx, } = setup();
+      const { config, compilerCtx, buildCtx } = setup();
       buildCtx.components = [componentOne, componentTwo];
 
       const bundleOptions = getBundleOptions(
@@ -144,7 +144,7 @@ export { MyBestComponent, defineCustomElement as defineCustomElementMyBestCompon
         tagName: 'component-with-jsx',
       });
 
-      const { config, compilerCtx, buildCtx, } = setup();
+      const { config, compilerCtx, buildCtx } = setup();
       buildCtx.components = [component];
 
       const bundleOptions = getBundleOptions(
