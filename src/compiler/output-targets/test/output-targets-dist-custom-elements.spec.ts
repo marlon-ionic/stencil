@@ -139,12 +139,8 @@ describe('Custom Elements output target', () => {
 export * from '${USER_INDEX_ENTRY_ID}';
 import { globalScripts } from '${STENCIL_APP_GLOBALS_ID}';
 globalScripts();
-import { StubCmp as $CmpStubCmp, defineCustomElement as cmpDefCustomEleStubCmp } from '\0StubCmp';
-export const StubCmp = $CmpStubCmp;
-export const defineCustomElementStubCmp = cmpDefCustomEleStubCmp;
-import { MyBestComponent as $CmpMyBestComponent, defineCustomElement as cmpDefCustomEleMyBestComponent } from '\0MyBestComponent';
-export const MyBestComponent = $CmpMyBestComponent;
-export const defineCustomElementMyBestComponent = cmpDefCustomEleMyBestComponent;`
+export { StubCmp, defineCustomElement as defineCustomElementStubCmp } from '\0StubCmp';
+export { MyBestComponent, defineCustomElement as defineCustomElementMyBestComponent } from '\0MyBestComponent';`
       );
     });
 

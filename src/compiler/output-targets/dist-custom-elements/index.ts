@@ -199,7 +199,7 @@ export const addCustomElementInputs = (buildCtx: d.BuildCtx, bundleOpts: BundleO
     bundleOpts.loader[coreKey] = exp.join('\n');
   });
 
-  bundleOpts.loader['\0core'] += indexImps.join('\n');
+  bundleOpts.loader['\0core'] += indexImports.join('\n');
 };
 
 /**
