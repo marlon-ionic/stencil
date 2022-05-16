@@ -192,7 +192,7 @@ export const addCustomElementInputs = (buildCtx: d.BuildCtx, bundleOpts: BundleO
       // instance, `cmp.sourceFilePath`, we would end up with duplicated modules in our output.
       indexImports.push(
         `export { ${exportName}, defineCustomElement as defineCustomElement${exportName} } from '${coreKey}';`
-      )
+      );
     }
 
     bundleOpts.inputs[cmp.tagName] = coreKey;

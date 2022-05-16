@@ -52,12 +52,6 @@ describe('Custom Elements output target', () => {
     }
   );
 
-  xit('should exit without error', async () => {
-    const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
-    buildCtx.components = [stubComponentCompilerMeta()];
-    const retVal = await outputCustomElements(config, compilerCtx, buildCtx);
-  });
-
   describe('generateEntryPoint', () => {
     it.each([true, false])('should include globalScripts if the right option is set', (includeGlobalScripts) => {
       const entryPoint = generateEntryPoint({
