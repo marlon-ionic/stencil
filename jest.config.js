@@ -3,6 +3,7 @@ module.exports = {
   moduleNameMapper: {
     '@app-data': '<rootDir>/internal/app-data/index.cjs',
     '@app-globals': '<rootDir>/internal/app-globals/index.cjs',
+    '@compiler-deps': '<rootDir>/src/compiler/sys/modules/compiler-deps.ts',
     '@platform': '<rootDir>/internal/testing/index.js',
     '@runtime': '<rootDir>/internal/testing/index.js',
     '@stencil/core/cli': '<rootDir>/cli/index.js',
@@ -10,7 +11,6 @@ module.exports = {
     '@stencil/core/mock-doc': '<rootDir>/mock-doc/index.cjs',
     '@stencil/core/testing': '<rootDir>/testing/index.js',
     '@utils': '<rootDir>/src/utils',
-    '@compiler-deps': '<rootDir>/src/compiler/sys/modules/compiler-deps.ts'
   },
   coverageDirectory: './coverage/',
   coverageReporters: ['json', 'lcov', 'text', 'clover'],
