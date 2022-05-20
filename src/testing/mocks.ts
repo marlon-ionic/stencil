@@ -156,8 +156,15 @@ export function mockWindow(html: string = null) {
   return win as any as Window;
 }
 
-export function mockModule(mod: Partial<Module> = {}): Module {
-  return {
+/**
+ * This gives you a mock Module, an interface which is the internal compiler
+ * representation of a module. It includes a bunch of information necessary for
+ * compilation, this mock basically sets sane defaults for all those values.
+ *
+ * @param mod is an override module that you can supply to set particular values
+ * @returns a module object ready to use in tests!
+ */
+export const mockModule = (mod: Partial<Module> = {}): Module  => ({
     cmps: [],
     coreRuntimeApis: [],
     collectionName: '',
@@ -193,5 +200,4 @@ export function mockModule(mod: Partial<Module> = {}): Module {
     hasVdomText: false,
     hasVdomXlink: false,
     ...mod,
-  };
-}
+});
