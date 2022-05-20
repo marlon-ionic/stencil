@@ -7,6 +7,7 @@ import {
   generatePreamble,
   getSourceMappingUrlForEndOfFile,
   hasError,
+  isString,
   rollupToStencilSourceMap,
 } from '@utils';
 import { getCustomElementsBuildConditionals } from '../dist-custom-elements-bundle/custom-elements-build-conditionals';
@@ -116,15 +117,25 @@ export const bundleCustomElements = async (
         preferConst: true,
       });
 
+      // the output target should have been validated at this point - as a result, we expect this field
+      // to have been backfilled if it wasn't provided
+      const outputTargetDir: string = outputTarget.dir!;
+
+      // besides, if it isn't here we do a diagnostic and an early return
+      if (!isString(outputTargetDir)) {
+        buildCtx.diagnostics.push({
+          level: 'error',
+          type: 'build',
+          messageText: 'dist-custom-elements output target provided with no output target directory!',
+        });
+        return;
+      }
+
       const minify = outputTarget.externalRuntime || outputTarget.minify !== true ? false : config.minifyJs;
       const files = rollupOutput.output.map(async (bundle) => {
         if (bundle.type === 'chunk') {
           let code = bundle.code;
           let sourceMap = rollupToStencilSourceMap(bundle.map);
-
-          // the output target should have been validated at this point - as a result, we expect this field
-          // to have been backfilled if it wasn't provided
-          const outputTargetDir: string = outputTarget.dir!;
 
           const optimizeResults = await optimizeModule(config, compilerCtx, {
             input: code,
@@ -139,13 +150,9 @@ export const bundleCustomElements = async (
           if (optimizeResults.sourceMap) {
             sourceMap = optimizeResults.sourceMap;
             code = code + getSourceMappingUrlForEndOfFile(bundle.fileName);
-            await compilerCtx.fs.writeFile(
-              join(outputTargetDir, bundle.fileName + '.map'),
-              JSON.stringify(sourceMap),
-              {
-                outputTargetType: outputTarget.type,
-              }
-            );
+            await compilerCtx.fs.writeFile(join(outputTargetDir, bundle.fileName + '.map'), JSON.stringify(sourceMap), {
+              outputTargetType: outputTarget.type,
+            });
           }
           await compilerCtx.fs.writeFile(join(outputTargetDir, bundle.fileName), code, {
             outputTargetType: outputTarget.type,

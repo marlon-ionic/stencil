@@ -3,6 +3,7 @@ import { mockConfig, mockStencilSystem, mockBuildCtx, mockCompilerCtx, mockModul
 import type * as d from '../../../declarations';
 import {
   addCustomElementInputs,
+  bundleCustomElements,
   generateEntryPoint,
   getBundleOptions,
   outputCustomElements,
@@ -108,6 +109,21 @@ describe('Custom Elements output target', () => {
       } else {
         expect(options.inlineDynamicImports).toBeFalsy();
       }
+    });
+  });
+
+  describe('bundleCustomElements', () => {
+    it('should set a diagnostic if no `dir` prop on the output target', async () => {
+      const { config, compilerCtx, buildCtx } = setup();
+      const outputTarget: OutputTargetDistCustomElements = { type: 'dist-custom-elements' };
+      const ret = await bundleCustomElements(config, compilerCtx, buildCtx, outputTarget);
+      expect(buildCtx.diagnostics).toEqual([
+        {
+          level: 'error',
+          type: 'build',
+          messageText: 'dist-custom-elements output target provided with no output target directory!',
+        },
+      ]);
     });
   });
 
