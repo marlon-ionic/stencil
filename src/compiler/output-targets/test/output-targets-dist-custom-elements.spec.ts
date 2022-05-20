@@ -43,15 +43,16 @@ describe('Custom Elements output target', () => {
     expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
   });
 
-  it.each<d.OutputTarget[][]>([[[]], [[{ type: 'dist' }]], [[{ type: 'dist' }, { type: 'dist-custom-elements-bundle' }]]])(
-    'should return early if no appropriate output target (%j)',
-    async (outputTargets) => {
-      const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
-      config.outputTargets = outputTargets
-      await outputCustomElements(config, compilerCtx, buildCtx);
-      expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
-    }
-  );
+  it.each<d.OutputTarget[][]>([
+    [[]],
+    [[{ type: 'dist' }]],
+    [[{ type: 'dist' }, { type: 'dist-custom-elements-bundle' }]],
+  ])('should return early if no appropriate output target (%j)', async (outputTargets) => {
+    const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
+    config.outputTargets = outputTargets;
+    await outputCustomElements(config, compilerCtx, buildCtx);
+    expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
+  });
 
   describe('generateEntryPoint', () => {
     it.each([true, false])('should include globalScripts if the right option is set', (includeGlobalScripts) => {
@@ -74,7 +75,7 @@ describe('Custom Elements output target', () => {
       const options = getBundleOptions(config, buildCtx, compilerCtx, { type: 'dist-custom-elements' });
       expect(options.id).toBe('customElements');
       expect(options.platform).toBe('client');
-      expect(options.inlineWorkers).toBeTruthy();
+      expect(options.inlineWorkers).toBe(true);
       expect(options.inputs).toEqual({
         index: '\0core',
       });
