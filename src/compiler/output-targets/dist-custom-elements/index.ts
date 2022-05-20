@@ -69,32 +69,28 @@ export const getBundleOptions = (
   buildCtx: d.BuildCtx,
   compilerCtx: d.CompilerCtx,
   outputTarget: d.OutputTargetDistCustomElements
-): BundleOptions => {
-  const bundleOpts: BundleOptions = {
-    id: 'customElements',
-    platform: 'client',
-    conditionals: getCustomElementsBuildConditionals(config, buildCtx.components),
-    customTransformers: getCustomElementCustomTransformer(config, compilerCtx, buildCtx.components, outputTarget),
-    externalRuntime: !!outputTarget.externalRuntime,
-    inlineWorkers: true,
-    inputs: {
-      // Here we prefix our index chunk with '\0' to tell Rollup that we're
-      // going to be using virtual modules with this module. A leading '\0'
-      // prevents other plugins from messing with the module. We generate a
-      // string for the index chunk below in the `loader` property.
-      //
-      // @see {@link https://rollupjs.org/guide/en/#conventions} for more info.
-      index: '\0core',
-    },
-    loader: {
-      '\0core': generateEntryPoint(outputTarget),
-    },
-    inlineDynamicImports: outputTarget.inlineDynamicImports,
-    preserveEntrySignatures: 'allow-extension',
-  };
-
-  return bundleOpts;
-};
+): BundleOptions => ({
+  id: 'customElements',
+  platform: 'client',
+  conditionals: getCustomElementsBuildConditionals(config, buildCtx.components),
+  customTransformers: getCustomElementCustomTransformer(config, compilerCtx, buildCtx.components, outputTarget),
+  externalRuntime: !!outputTarget.externalRuntime,
+  inlineWorkers: true,
+  inputs: {
+    // Here we prefix our index chunk with '\0' to tell Rollup that we're
+    // going to be using virtual modules with this module. A leading '\0'
+    // prevents other plugins from messing with the module. We generate a
+    // string for the index chunk below in the `loader` property.
+    //
+    // @see {@link https://rollupjs.org/guide/en/#conventions} for more info.
+    index: '\0core',
+  },
+  loader: {
+    '\0core': generateEntryPoint(outputTarget),
+  },
+  inlineDynamicImports: outputTarget.inlineDynamicImports,
+  preserveEntrySignatures: 'allow-extension',
+});
 
 export const bundleCustomElements = async (
   config: d.Config,
@@ -126,6 +122,10 @@ export const bundleCustomElements = async (
           let code = bundle.code;
           let sourceMap = rollupToStencilSourceMap(bundle.map);
 
+          // the output target should have been validated at this point - as a result, we expect this field
+          // to have been backfilled if it wasn't provided
+          const outputTargetDir: string = outputTarget.dir!;
+
           const optimizeResults = await optimizeModule(config, compilerCtx, {
             input: code,
             isCore: bundle.isEntry,
@@ -140,14 +140,14 @@ export const bundleCustomElements = async (
             sourceMap = optimizeResults.sourceMap;
             code = code + getSourceMappingUrlForEndOfFile(bundle.fileName);
             await compilerCtx.fs.writeFile(
-              join(outputTarget.dir!, bundle.fileName + '.map'),
+              join(outputTargetDir, bundle.fileName + '.map'),
               JSON.stringify(sourceMap),
               {
                 outputTargetType: outputTarget.type,
               }
             );
           }
-          await compilerCtx.fs.writeFile(join(outputTarget.dir!, bundle.fileName), code, {
+          await compilerCtx.fs.writeFile(join(outputTargetDir, bundle.fileName), code, {
             outputTargetType: outputTarget.type,
           });
         }
