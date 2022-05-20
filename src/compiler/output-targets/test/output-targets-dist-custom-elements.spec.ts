@@ -43,11 +43,11 @@ describe('Custom Elements output target', () => {
     expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
   });
 
-  it.each([[[]], [[{ type: 'dist' }]], [[{ type: 'dist' }, { type: 'dist-custom-elements-bundle' }]]])(
+  it.each<d.OutputTarget[][]>([[[]], [[{ type: 'dist' }]], [[{ type: 'dist' }, { type: 'dist-custom-elements-bundle' }]]])(
     'should return early if no appropriate output target (%j)',
     async (outputTargets) => {
       const { config, compilerCtx, buildCtx, bundleCustomElementsSpy } = setup();
-      config.outputTargets = outputTargets as d.OutputTarget[];
+      config.outputTargets = outputTargets
       await outputCustomElements(config, compilerCtx, buildCtx);
       expect(bundleCustomElementsSpy).not.toHaveBeenCalled();
     }
