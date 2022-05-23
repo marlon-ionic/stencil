@@ -117,7 +117,7 @@ describe('Custom Elements output target', () => {
     it('should set a diagnostic if no `dir` prop on the output target', async () => {
       const { config, compilerCtx, buildCtx } = setup();
       const outputTarget: OutputTargetDistCustomElements = { type: 'dist-custom-elements' };
-      const ret = await bundleCustomElements(config, compilerCtx, buildCtx, outputTarget);
+      await bundleCustomElements(config, compilerCtx, buildCtx, outputTarget);
       expect(buildCtx.diagnostics).toEqual([
         {
           level: 'error',
