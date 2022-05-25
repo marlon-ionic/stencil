@@ -117,6 +117,12 @@ export const readPackageJson = async (config: d.Config, compilerCtx: d.CompilerC
   }
 };
 
+/**
+ *
+ * @param pkgJsonStr
+ * @param pkgJsonFilePath
+ * @returns
+ */
 export const parsePackageJson = (
   pkgJsonStr: string,
   pkgJsonFilePath: string
@@ -127,7 +133,14 @@ export const parsePackageJson = (
   return null;
 };
 
-export const parseJson = (jsonStr: string, filePath?: string) => {
+/**
+ *
+ * @param jsonStr
+ * @param filePath
+ * @returns
+ */
+const parseJson = (jsonStr: string, filePath: string): any => {
+  // TODO
   const rtn = {
     diagnostic: null as d.Diagnostic,
     data: null as any,

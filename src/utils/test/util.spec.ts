@@ -150,4 +150,65 @@ describe('util', () => {
     expect(util.createJsVarName('')).toBe('');
     expect(util.createJsVarName(null)).toBe(null);
   });
+
+  describe('parsePackageJson', () => {
+    const mockPackageJsonPath = '/mock/path/package.json';
+
+    it('returns null if the path to package.json is not a string', () => {
+      // code paths exist where the path argument is provided by a Stencil config file. Because this is user-provided
+      // input, the path may not be a valid string, requiring a type assertion for the second argument
+      const diagnostic = util.parsePackageJson('{ "someJson": "value"}', null as unknown as string);
+
+      expect(diagnostic).toBeNull();
+    });
+
+    it('returns a parse error if the json is not a string', () => {
+      const diagnostic = util.parsePackageJson(null, mockPackageJsonPath);
+
+      expect(diagnostic).toEqual({
+        diagnostic: {
+          absFilePath: mockPackageJsonPath,
+          header: 'Error Parsing JSON',
+          level: 'error',
+          lines: [],
+          messageText: 'Invalid JSON input to parse',
+          relFilePath: null,
+          type: 'build',
+        },
+        data: null,
+        filePath: mockPackageJsonPath,
+      });
+    });
+
+    it('returns a parse error if parsing cannot complete', () => {
+      // improperly formatted JSON - note the lack of ':'
+      const diagnostic = util.parsePackageJson('{ "someJson" "value"}', mockPackageJsonPath);
+
+      expect(diagnostic).toEqual({
+        diagnostic: {
+          absFilePath: mockPackageJsonPath,
+          header: 'Error Parsing JSON',
+          level: 'error',
+          lines: [],
+          messageText: 'Unexpected string in JSON at position 13', // due to missing colon in input
+          relFilePath: null,
+          type: 'build',
+        },
+        data: null,
+        filePath: mockPackageJsonPath,
+      });
+    });
+
+    it('returns the parsed data from the provided json', () => {
+      const diagnostic = util.parsePackageJson('{ "someJson": "value"}', mockPackageJsonPath);
+
+      expect(diagnostic).toEqual({
+        diagnostic: null,
+        data: {
+          someJson: 'value',
+        },
+        filePath: mockPackageJsonPath,
+      });
+    });
+  });
 });
